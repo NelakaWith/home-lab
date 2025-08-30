@@ -83,6 +83,19 @@ services:
     ports:
       - "${PROWLARR_PORT}:9696"
     restart: unless-stopped
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    environment:
+      - PUID=${LIDARR_PUID}
+      - PGID=${LIDARR_PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./data/lidarr/config:/config
+      - ./media/music:/music
+      - ./data/qbittorrent/downloads:/downloads
+    ports:
+      - "${LIDARR_PORT}:8686"
   uptimekuma:
     image: louislam/uptime-kuma:latest
     volumes: 

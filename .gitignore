@@ -1,1 +1,8 @@
 .env
+data/
+media/
+.docker.compose.yml.swo
+.docker.compose.yml.swp
+docker-compose.yml.backup
+docker-compose.yml.bak
+
