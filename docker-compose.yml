@@ -7,36 +7,33 @@ services:
     volumes:
       - ./data/jellyfin/config:/config
       - ./data/jellyfin/cache:/cache
-      - type: bind
-        source: ./media
-        target: /media
-      
+      - ${MUSIC_PATH}:/media/Music
+      - ${MOVIES_PATH}:/media/Movies
+      - ${TV_PATH}:/media/Tv_Shows
     restart: 'unless-stopped'
-    # Optional - alternative address used for autodiscovery
     environment:
       - ${JELLYFIN_PUBLISHED_URL}
-    # Optional - may be necessary for docker healthcheck to pass if running in host network mode
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
-
     environment:
       - PUID=${QBITTORENT_PUID}
       - PGID=${QBITTORENT_PGID}
       - TZ=${TZ}
       - WEBUI_PORT=${QBITTORENT_WEBUI_PORT}
       - TORRENTING_PORT=${QBITTORENT_TORRENTING_PORT}
-
     volumes:
       - ./data/qbittorrent/config:/config
-      - ./data/qbittorrent/downloads:/downloads
+      - ${DOWNLOADS_PATH}:/downloads
     ports:
       - "${QBITTORENT_WEBUI_PORT}:9090"
       - "${QBITTORENT_TORRENTING_PORT}:6881"
       - "${QBITTORENT_TORRENTING_PORT}:6881/udp"
     restart: unless-stopped
+
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
@@ -46,31 +43,33 @@ services:
       - TZ=${TZ}
     volumes:
       - ./data/sonarr/config:/config
-      - ./media/tv:/tv
-      - ./data/qbittorrent/downloads:/downloads
+      - ${TV_PATH}:/tv
+      - ${DOWNLOADS_PATH}:/downloads
     ports:
       - "${SONARR_PORT}:8989"
     restart: unless-stopped
     depends_on:
       - prowlarr
       - qbittorrent
-  radar:
+
+  radarr:
     image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
-    environment: 
+    environment:
       - PUID=${RADARR_PUID}
       - PGID=${RADARR_PGID}
       - TZ=${TZ}
     volumes:
       - ./data/radarr/config:/config
-      - ./media/movies:/movies
-      - ./data/qbittorrent/downloads:/downloads
+      - ${MOVIES_PATH}:/movies
+      - ${DOWNLOADS_PATH}:/downloads
     ports:
       - "${RADARR_PORT}:7878"
     restart: unless-stopped
     depends_on:
       - prowlarr
       - qbittorrent
+
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
@@ -83,6 +82,7 @@ services:
     ports:
       - "${PROWLARR_PORT}:9696"
     restart: unless-stopped
+
   lidarr:
     image: lscr.io/linuxserver/lidarr:latest
     container_name: lidarr
@@ -92,15 +92,18 @@ services:
       - TZ=${TZ}
     volumes:
       - ./data/lidarr/config:/config
-      - ./media/music:/music
-      - ./data/qbittorrent/downloads:/downloads
+      - ${MUSIC_PATH}:/music
+      - ${DOWNLOADS_PATH}:/downloads
     ports:
       - "${LIDARR_PORT}:8686"
+    restart: unless-stopped
+
   uptimekuma:
     image: louislam/uptime-kuma:latest
-    volumes: 
+    volumes:
       - ./data/uptimekuma:/app/data
     container_name: uptime-kuma
     ports:
       - "${UPTIMEKUMA_PORT}:3001"
     restart: always
+
